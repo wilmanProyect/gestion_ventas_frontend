@@ -16,7 +16,7 @@ export interface CreateUserPayload {
   name: string;
   email: string;
   password?: string;
-  roles?: string[]; // Array de IDs de roles
+  roleIds?: string[]; // Array de IDs de roles
 }
 
 export interface AssignRolesPayload {

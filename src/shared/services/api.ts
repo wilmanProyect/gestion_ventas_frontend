@@ -55,6 +55,9 @@ export const api = {
   put: <T = any>(endpoint: string, data?: any, config?: any): Promise<T> => 
     axiosInstance.put(endpoint, data, config) as any,
     
+  patch: <T = any>(endpoint: string, data?: any, config?: any): Promise<T> => 
+    axiosInstance.patch(endpoint, data, config) as any,
+    
   delete: <T = any>(endpoint: string, config?: any): Promise<T> => 
     axiosInstance.delete(endpoint, config) as any,
 };

@@ -7,6 +7,7 @@ import {
   useGetPermissions,
   useCreateRole,
   useUpdateRole,
+  useDeleteRole,
 } from './useRoles';
 import { Card } from '../../../shared/ui/Card';
 import { Button } from '../../../shared/ui/Button';
@@ -27,6 +28,7 @@ export const RolesPage: React.FC = () => {
 
   const createRoleMutation = useCreateRole();
   const updateRoleMutation = useUpdateRole();
+  const deleteRoleMutation = useDeleteRole();
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -66,6 +68,20 @@ export const RolesPage: React.FC = () => {
       setIsEditOpen(false);
     } catch (err: any) {
       alert(err.message || 'Error al actualizar el rol');
+    }
+  };
+
+  const handleDeleteRole = async (id: string, name: string) => {
+    if (name === 'Admin') {
+      alert('No está permitido eliminar el rol crítico de sistema Admin.');
+      return;
+    }
+    if (confirm(`¿Estás seguro de que deseas eliminar el rol "${name}"?`)) {
+      try {
+        await deleteRoleMutation.mutateAsync(id);
+      } catch (err: any) {
+        alert(err.message || 'Error al eliminar el rol');
+      }
     }
   };
 
@@ -113,21 +129,32 @@ export const RolesPage: React.FC = () => {
                   <h2 className="text-md font-bold text-slate-200">{role.name}</h2>
                   <p className="text-xs text-slate-500">{role.description}</p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedRole(role);
-                    editForm.reset({
-                      name: role.name,
-                      description: role.description,
-                      permissionIds: role.permissions.map((p) => p.id),
-                    });
-                    setIsEditOpen(true);
-                  }}
-                >
-                  Editar
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedRole(role);
+                      editForm.reset({
+                        name: role.name,
+                        description: role.description,
+                        permissionIds: role.permissions.map((p) => p.id),
+                      });
+                      setIsEditOpen(true);
+                    }}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => handleDeleteRole(role.id, role.name)}
+                    isLoading={deleteRoleMutation.isPending && deleteRoleMutation.variables === role.id}
+                    disabled={role.name === 'Admin'}
+                  >
+                    Eliminar
+                  </Button>
+                </div>
               </div>
 
               {/* Permissions list */}

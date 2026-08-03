@@ -372,3 +372,265 @@ Esta guía detalla todas las APIs REST de nuestro backend para su implementació
     }
   ]
   ```
+
+---
+
+## 👥 Módulo de Roles y Permisos
+
+> [!NOTE]
+> Todos los endpoints de este módulo requieren la cabecera `Authorization: Bearer <TOKEN_JWT>`.
+
+### 13. Crear un Nuevo Rol
+* **Endpoint:** `POST /roles`
+* **Permiso requerido:** `roles:create`
+* **Content-Type:** `application/json`
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "name": "Supervisor de Ventas",
+    "description": "Rol encargado de gestionar las ventas y devoluciones",
+    "permissionIds": [
+      "p1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "p2b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6e"
+    ]
+  }
+  ```
+* **Respuesta Exitosa (201 Created):**
+  ```json
+  {
+    "id": "r1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "Supervisor de Ventas",
+    "description": "Rol encargado de gestionar las ventas y devoluciones",
+    "permissions": [
+      {
+        "id": "p1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+        "name": "create:sale",
+        "description": "Permite registrar ventas directas"
+      },
+      {
+        "id": "p2b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6e",
+        "name": "process:return",
+        "description": "Permite procesar devoluciones de arroz"
+      }
+    ]
+  }
+  ```
+
+### 14. Listar Todos los Roles
+* **Endpoint:** `GET /roles`
+* **Permiso requerido:** `roles:read`
+* **Respuesta Exitosa (200 OK):**
+  ```json
+  [
+    {
+      "id": "r1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Supervisor de Ventas",
+      "description": "Rol encargado de gestionar las ventas y devoluciones",
+      "permissions": [
+        {
+          "id": "p1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+          "name": "create:sale",
+          "description": "Permite registrar ventas directas"
+        }
+      ]
+    }
+  ]
+  ```
+
+### 15. Listar Todos los Permisos Disponibles
+* **Endpoint:** `GET /roles/permissions`
+* **Permiso requerido:** `roles:read`
+* **Respuesta Exitosa (200 OK):**
+  ```json
+  [
+    {
+      "id": "p1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "create:sale",
+      "description": "Permite registrar ventas directas"
+    },
+    {
+      "id": "p2b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6e",
+      "name": "users:create",
+      "description": "Permite crear nuevos usuarios"
+    }
+  ]
+  ```
+
+### 16. Actualizar un Rol Existente
+* **Endpoint:** `PUT /roles/:id`
+* **Permiso requerido:** `roles:update`
+* **Content-Type:** `application/json`
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "name": "Supervisor de Ventas Senior",
+    "description": "Rol encargado de supervisar ventas y gestionar inventario",
+    "permissionIds": [
+      "p1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "p3b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6f"
+    ]
+  }
+  ```
+* **Respuesta Exitosa (200 OK):**
+  ```json
+  {
+    "id": "r1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "Supervisor de Ventas Senior",
+    "description": "Rol encargado de supervisar ventas y gestionar inventario",
+    "permissions": [
+      {
+        "id": "p1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+        "name": "create:sale",
+        "description": "Permite registrar ventas directas"
+      },
+      {
+        "id": "p3b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6f",
+        "name": "view:inventory",
+        "description": "Permite visualizar el consolidado y detalle del stock"
+      }
+    ]
+  }
+  ```
+
+### 17. Eliminar un Rol Lógicamente
+* **Endpoint:** `DELETE /roles/:id`
+* **Permiso requerido:** `roles:delete`
+* **Respuesta Exitosa (200 OK):**
+  ```json
+  {
+    "message": "Rol eliminado exitosamente"
+  }
+  ```
+  > [!WARNING]
+  > No está permitido eliminar el rol crítico de sistema `Admin`. Si se intenta hacer, el backend retornará un error `400 Bad Request`.
+
+---
+
+## 👤 Módulo de Usuarios
+
+> [!NOTE]
+> Todos los endpoints de este módulo requieren la cabecera `Authorization: Bearer <TOKEN_JWT>`.
+
+### 18. Crear un Nuevo Usuario
+* **Endpoint:** `POST /users`
+* **Permiso requerido:** `users:create`
+* **Content-Type:** `application/json`
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "name": "Mariana Gómez",
+    "email": "mariana.gomez@example.com",
+    "password": "Password123!",
+    "roleIds": [
+      "r1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"
+    ]
+  }
+  ```
+* **Respuesta Exitosa (201 Created):**
+  ```json
+  {
+    "id": "u1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "Mariana Gómez",
+    "email": "mariana.gomez@example.com",
+    "isActive": true,
+    "roles": [
+      {
+        "id": "r1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+        "name": "Supervisor de Ventas Senior"
+      }
+    ]
+  }
+  ```
+
+### 19. Listar Todos los Usuarios
+* **Endpoint:** `GET /users`
+* **Permiso requerido:** `users:read`
+* **Respuesta Exitosa (200 OK):**
+  ```json
+  [
+    {
+      "id": "u1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Mariana Gómez",
+      "email": "mariana.gomez@example.com",
+      "isActive": true,
+      "roles": [
+        {
+          "id": "r1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+          "name": "Supervisor de Ventas Senior",
+          "permissions": [
+            "create:sale",
+            "view:inventory"
+          ]
+        }
+      ]
+    }
+  ]
+  ```
+
+### 20. Asignar/Actualizar Roles a un Usuario
+* **Endpoint:** `PUT /users/:id/roles`
+* **Permiso requerido:** `users:update`
+* **Content-Type:** `application/json`
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "roleIds": [
+      "r1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "another-role-uuid"
+    ]
+  }
+  ```
+* **Respuesta Exitosa (200 OK):**
+  ```json
+  {
+    "id": "u1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "Mariana Gómez",
+    "email": "mariana.gomez@example.com",
+    "isActive": true,
+    "roles": [
+      {
+        "id": "r1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+        "name": "Supervisor de Ventas Senior"
+      },
+      {
+        "id": "another-role-uuid",
+        "name": "Vendedor"
+      }
+    ]
+  }
+  ```
+
+### 21. Cambiar Estado del Usuario (Activo/Inactivo)
+* **Endpoint:** `PATCH /users/:id/status`
+* **Permiso requerido:** `users:update`
+* **Content-Type:** `application/json`
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "isActive": false
+  }
+  ```
+* **Respuesta Exitosa (200 OK):**
+  ```json
+  {
+    "id": "u1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "Mariana Gómez",
+    "email": "mariana.gomez@example.com",
+    "isActive": false
+  }
+  ```
+  > [!WARNING]
+  > Un usuario inactivo no podrá iniciar sesión y recibirá un error `401 Unauthorized` indicando que la cuenta está inactiva. No se permite desactivar la cuenta del administrador raíz `admin@admin.com`.
+
+### 22. Eliminar un Usuario Lógicamente
+* **Endpoint:** `DELETE /users/:id`
+* **Permiso requerido:** `users:delete`
+* **Respuesta Exitosa (200 OK):**
+  ```json
+  {
+    "message": "Usuario eliminado exitosamente"
+  }
+  ```
+  > [!WARNING]
+  > Al eliminar lógicamente al usuario, su estado `isActive` pasará a `false` automáticamente y no se podrá iniciar sesión con esta cuenta. No se permite eliminar la cuenta del administrador raíz `admin@admin.com`.
+

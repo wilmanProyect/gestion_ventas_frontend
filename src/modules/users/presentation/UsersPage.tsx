@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useGetUsers, useCreateUser, useAssignRoles } from './useUsers';
+import { useGetUsers, useCreateUser, useAssignRoles, useUpdateUserStatus, useDeleteUser } from './useUsers';
 import { useGetRoles } from '../../roles-permissions/presentation/useRoles';
 import { Card } from '../../../shared/ui/Card';
 import { Button } from '../../../shared/ui/Button';
@@ -30,6 +30,8 @@ export const UsersPage: React.FC = () => {
 
   const createUserMutation = useCreateUser();
   const assignRolesMutation = useAssignRoles();
+  const updateStatusMutation = useUpdateUserStatus();
+  const deleteUserMutation = useDeleteUser();
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -50,7 +52,11 @@ export const UsersPage: React.FC = () => {
   // Submit handlers
   const onCreateSubmit = async (data: CreateUserFormData) => {
     try {
-      await createUserMutation.mutateAsync(data);
+      const { roles, ...rest } = data;
+      await createUserMutation.mutateAsync({
+        ...rest,
+        roleIds: roles,
+      });
       createForm.reset();
       setIsCreateOpen(false);
     } catch (err: any) {
@@ -88,6 +94,35 @@ export const UsersPage: React.FC = () => {
         current.filter((id) => id !== roleId),
         { shouldValidate: true }
       );
+    }
+  };
+
+  const handleToggleStatus = async (id: string, currentStatus: boolean, email: string) => {
+    if (email === 'admin@admin.com') {
+      alert('No se permite desactivar la cuenta del administrador raíz.');
+      return;
+    }
+    const action = currentStatus ? 'desactivar' : 'activar';
+    if (confirm(`¿Estás seguro de que deseas ${action} a este usuario?`)) {
+      try {
+        await updateStatusMutation.mutateAsync({ id, isActive: !currentStatus });
+      } catch (err: any) {
+        alert(err.message || `Error al ${action} el usuario`);
+      }
+    }
+  };
+
+  const handleDeleteUser = async (id: string, email: string) => {
+    if (email === 'admin@admin.com') {
+      alert('No se permite eliminar la cuenta del administrador raíz.');
+      return;
+    }
+    if (confirm('¿Estás seguro de que deseas eliminar lógicamente a este usuario?')) {
+      try {
+        await deleteUserMutation.mutateAsync(id);
+      } catch (err: any) {
+        alert(err.message || 'Error al eliminar el usuario');
+      }
     }
   };
 
@@ -156,19 +191,39 @@ export const UsersPage: React.FC = () => {
                     </div>
                   </Td>
                   <Td>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        rolesForm.reset({
-                          roleIds: user.roles.map((r) => r.id),
-                        });
-                        setIsRolesOpen(true);
-                      }}
-                    >
-                      Editar Roles
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          rolesForm.reset({
+                            roleIds: user.roles.map((r) => r.id),
+                          });
+                          setIsRolesOpen(true);
+                        }}
+                      >
+                        Editar Roles
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleToggleStatus(user.id, user.isActive, user.email)}
+                        isLoading={updateStatusMutation.isPending && updateStatusMutation.variables?.id === user.id}
+                        disabled={user.email === 'admin@admin.com'}
+                      >
+                        {user.isActive ? 'Desactivar' : 'Activar'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => handleDeleteUser(user.id, user.email)}
+                        isLoading={deleteUserMutation.isPending && deleteUserMutation.variables === user.id}
+                        disabled={user.email === 'admin@admin.com'}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
                   </Td>
                 </Tr>
               ))
