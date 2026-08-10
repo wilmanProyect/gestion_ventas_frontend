@@ -73,7 +73,7 @@ export const LoginPage: React.FC = () => {
             </svg>
           </div>
           <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-emerald-100 to-slate-200 bg-clip-text text-transparent">
-            Agroptima ERP
+            Rio Verde Ventas
           </h1>
           <p className="text-xs text-slate-500 tracking-wide font-medium uppercase">
             Gestión de Ventas e Inventario

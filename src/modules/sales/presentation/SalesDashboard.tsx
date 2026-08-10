@@ -155,8 +155,13 @@ export const SalesDashboard: React.FC = () => {
         }
       }
 
+      const itemsWithPrice = data.items.map((item) => ({
+        ...item,
+        pricePerUnit: getVarietyPrice(item.varietyId),
+      }));
+
       const formData = new FormData();
-      formData.append('items', JSON.stringify(data.items));
+      formData.append('items', JSON.stringify(itemsWithPrice));
       formData.append('paymentMethod', data.paymentMethod);
       formData.append('cashAmount', data.paymentMethod === 'CASH' ? total.toString() : data.cashAmount.toString());
       formData.append('qrAmount', data.paymentMethod === 'QR' ? total.toString() : data.qrAmount.toString());
@@ -195,10 +200,15 @@ export const SalesDashboard: React.FC = () => {
         }
       }
 
+      const itemsWithPrice = data.items.map((item) => ({
+        ...item,
+        pricePerUnit: getVarietyPrice(item.varietyId),
+      }));
+
       const formData = new FormData();
       formData.append('customerName', data.customerName);
       if (data.customerPhone) formData.append('customerPhone', data.customerPhone);
-      formData.append('items', JSON.stringify(data.items));
+      formData.append('items', JSON.stringify(itemsWithPrice));
       formData.append('paymentMethod', data.paymentMethod);
       formData.append('downPayment', data.downPayment.toString());
       formData.append('cashAmount', data.paymentMethod === 'CASH' ? data.downPayment.toString() : data.cashAmount.toString());

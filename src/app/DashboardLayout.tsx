@@ -5,6 +5,7 @@ import { useAuthStore } from '../modules/auth/presentation/useAuthStore';
 export const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
 
   const navigation = [
@@ -62,55 +63,87 @@ export const DashboardLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex bg-slate-950 text-slate-100 font-sans">
+      {/* Mobile Sidebar Overlay Backdrop */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={`
           flex flex-col bg-slate-900/60 backdrop-blur-lg border-r border-slate-800/80 
-          transition-all duration-300 ease-in-out z-20 shrink-0
-          ${isCollapsed ? 'w-20' : 'w-64'}
+          transition-all duration-300 ease-in-out shrink-0
+          
+          /* Responsive positioning: slides out on mobile/tablet, fits layout on desktop */
+          fixed lg:relative top-0 bottom-0 left-0 z-40 lg:z-20
+          h-screen lg:h-auto
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${isCollapsed ? 'lg:w-20' : 'lg:w-64'}
+          w-64
         `}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800/60">
-          {!isCollapsed && (
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow shadow-emerald-500/20">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800/60 shrink-0">
+          <div className="flex items-center gap-2">
+            {(!isCollapsed || isMobileOpen) && (
+              <>
+                <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow shadow-emerald-500/20">
+                  <span className="text-sm font-bold text-slate-950">RV</span>
+                </div>
+                <span className="font-bold tracking-wide text-sm bg-gradient-to-r from-emerald-100 to-slate-200 bg-clip-text text-transparent">
+                  VENTAS
+                </span>
+              </>
+            )}
+            {isCollapsed && !isMobileOpen && (
+              <div className="mx-auto h-8 w-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center">
                 <span className="text-sm font-bold text-slate-950">A</span>
               </div>
-              <span className="font-bold tracking-wide text-sm bg-gradient-to-r from-emerald-100 to-slate-200 bg-clip-text text-transparent">
-                Agroptima ERP
-              </span>
-            </div>
-          )}
-          {isCollapsed && (
-            <div className="mx-auto h-8 w-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center">
-              <span className="text-sm font-bold text-slate-950">A</span>
-            </div>
-          )}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800/60 transition-colors hidden md:block"
-          >
-            <svg
-              className={`h-4 w-4 transform transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+            )}
+          </div>
+          
+          <div className="flex items-center gap-1">
+            {/* Collapse sidebar button (Desktop only) */}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800/60 transition-colors hidden lg:block"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-            </svg>
-          </button>
+              <svg
+                className={`h-4 w-4 transform transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            {/* Close sidebar drawer button (Mobile/Tablet only) */}
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800/60 transition-colors lg:hidden"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 py-4 px-3 space-y-1.5">
+        <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
           {visibleNavigation.map((item) => {
             const isActive = location.pathname === item.path;
+            const showText = !isCollapsed || isMobileOpen;
             return (
               <Link
                 key={item.name}
                 to={item.path}
+                onClick={() => setIsMobileOpen(false)} // Close sidebar on selection (mobile view)
                 className={`
                   flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
                   ${isActive 
@@ -121,15 +154,15 @@ export const DashboardLayout: React.FC = () => {
                 <div className={`${isActive ? 'text-emerald-400' : 'text-slate-400'}`}>
                   {item.icon}
                 </div>
-                {!isCollapsed && <span className="animate-in fade-in duration-300">{item.name}</span>}
+                {showText && <span className="animate-in fade-in duration-300">{item.name}</span>}
               </Link>
             );
           })}
         </nav>
 
         {/* Footer / User Profile Summary */}
-        <div className="p-4 border-t border-slate-800/60 flex flex-col gap-3">
-          {!isCollapsed && user && (
+        <div className="p-4 border-t border-slate-800/60 flex flex-col gap-3 shrink-0">
+          {(!isCollapsed || isMobileOpen) && user && (
             <div className="flex items-center gap-3 animate-in fade-in duration-300">
               <div className="h-9 w-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-emerald-400 uppercase text-xs shadow-inner">
                 {user.name.slice(0, 2)}
@@ -144,35 +177,52 @@ export const DashboardLayout: React.FC = () => {
           )}
 
           <button
-            onClick={logout}
+            onClick={() => {
+              setIsMobileOpen(false);
+              logout();
+            }}
             className={`
               flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-950/20 transition-all duration-200 border border-transparent
-              ${isCollapsed ? 'justify-center' : ''}
+              ${isCollapsed && !isMobileOpen ? 'justify-center' : ''}
             `}
             title="Cerrar Sesión"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            {!isCollapsed && <span>Cerrar Sesión</span>}
+            {(!isCollapsed || isMobileOpen) && <span>Cerrar Sesión</span>}
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <header className="h-16 border-b border-slate-900 bg-slate-950/20 backdrop-blur-md flex items-center justify-between px-6 shrink-0 relative z-10">
-          <h2 className="text-md font-bold tracking-tight text-slate-200 uppercase">
-            {navigation.find((item) => item.path === location.pathname)?.name || 'ERP Dashboard'}
-          </h2>
+        <header className="h-16 border-b border-slate-900 bg-slate-950/20 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 relative z-10">
+          <div className="flex items-center gap-3">
+            {/* Hamburger Button (Mobile/Tablet only) */}
+            <button
+              onClick={() => setIsMobileOpen(!isMobileOpen)}
+              className="text-slate-400 hover:text-slate-200 p-2 rounded-xl hover:bg-slate-800/60 transition-colors lg:hidden"
+              title="Menu"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            
+            <h2 className="text-md font-bold tracking-tight text-slate-200 uppercase">
+              {navigation.find((item) => item.path === location.pathname)?.name || 'ERP Dashboard'}
+            </h2>
+          </div>
+          
           {user && (
-            <div className="text-xs text-slate-400 font-medium">
+            <div className="text-xs text-slate-400 font-medium hidden sm:block">
               Sesión iniciada como: <span className="text-slate-200 font-bold">{user.email}</span>
             </div>
           )}
         </header>
 
-        <main className="flex-1 p-6 md:p-8">
+        <main className="flex-1 p-4 sm:p-6 md:p-8">
           <Outlet />
         </main>
       </div>

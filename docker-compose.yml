@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3080
+    image: gestion-ventas-frontend:latest
+    container_name: gestion_ventas_frontend_app
+    ports:
+      - "127.0.0.1:3080:80"
+    restart: unless-stopped
