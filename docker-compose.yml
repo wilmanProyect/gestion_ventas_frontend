@@ -4,9 +4,15 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://localhost:3080
+        - VITE_API_URL=/api
     image: gestion-ventas-frontend:latest
     container_name: gestion_ventas_frontend_app
     ports:
-      - "127.0.0.1:3080:80"
+      - "127.0.0.1:8088:80"
+    networks:
+      - rioverde_ventas_net
     restart: unless-stopped
+
+networks:
+  rioverde_ventas_net:
+    external: true
