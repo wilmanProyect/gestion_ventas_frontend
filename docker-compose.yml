@@ -8,7 +8,7 @@ services:
     image: gestion-ventas-frontend:latest
     container_name: gestion_ventas_frontend_app
     ports:
-      - "127.0.0.1:8088:80"
+      - "127.0.0.1:3091:80"
     networks:
       - rioverde_ventas_net
     restart: unless-stopped
