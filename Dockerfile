@@ -1,8 +1,8 @@
 # Build stage
 FROM node:20-alpine AS build
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm (pin to v9 to match lockfileVersion 9.0 and ensure compatibility with Node 20)
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
 WORKDIR /app
 

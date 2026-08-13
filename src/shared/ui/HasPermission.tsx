@@ -22,9 +22,19 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   ]
 };
 
-export const checkPermission = (roles: string[] = [], permission: string): boolean => {
+export const checkPermission = (
+  roles: string[] = [],
+  permission: string,
+  userPermissions?: string[]
+): boolean => {
   if (roles.includes('Admin')) return true; // Admin has all permissions
   
+  // 1. Check permissions dynamically from the backend list
+  if (userPermissions && Array.isArray(userPermissions)) {
+    return userPermissions.includes(permission);
+  }
+
+  // 2. Fallback to hardcoded list for backward compatibility
   return roles.some(role => {
     const permissions = ROLE_PERMISSIONS[role] || [];
     return permissions.includes(permission);
@@ -46,7 +56,7 @@ export const HasPermission: React.FC<HasPermissionProps> = ({
 
   if (!user) return <>{fallback}</>;
 
-  const hasAccess = checkPermission(user.roles, permission);
+  const hasAccess = checkPermission(user.roles, permission, user.permissions);
 
   return hasAccess ? <>{children}</> : <>{fallback}</>;
 };
