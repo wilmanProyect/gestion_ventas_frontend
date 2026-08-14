@@ -16,7 +16,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build argument for API URL (injected at build time)
-ARG VITE_API_URL=${VITE_API_URL}
+ARG VITE_API_URL
 ENV VITE_API_URL=${VITE_API_URL}
 
 # Run the build
