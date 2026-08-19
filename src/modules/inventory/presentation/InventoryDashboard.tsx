@@ -9,6 +9,7 @@ import {
   useCreateLot,
   useCreateMovement,
 } from './useInventory';
+import { useGetBranches } from '../../branches/presentation/useBranches';
 import { Card } from '../../../shared/ui/Card';
 import { Button } from '../../../shared/ui/Button';
 import { Table, Thead, Tbody, Tr, Th, Td } from '../../../shared/ui/Table';
@@ -31,6 +32,7 @@ const lotItemSchema = z.object({
 
 const lotSchema = z.object({
   lotNumber: z.string().min(1, 'El número de lote es requerido'),
+  branchId: z.string().min(1, 'Selecciona la sucursal de destino'),
   items: z.array(lotItemSchema).min(1, 'Debe agregar al menos un ítem al lote'),
 });
 
@@ -44,6 +46,7 @@ const movementSchema = z.object({
 export const InventoryDashboard: React.FC = () => {
   const { data: inventoryData, isLoading: isInventoryLoading } = useGetInventory();
   const { data: varieties = [] } = useGetVarieties();
+  const { data: branches = [] } = useGetBranches();
 
   const createVarietyMutation = useCreateVariety();
   const createLotMutation = useCreateLot();
@@ -66,7 +69,7 @@ export const InventoryDashboard: React.FC = () => {
 
   const lotForm = useForm<z.infer<typeof lotSchema>>({
     resolver: zodResolver(lotSchema),
-    defaultValues: { lotNumber: '', items: [{ varietyId: '', quantityInitial: 0, pricePerQuintal: 0 }] },
+    defaultValues: { lotNumber: '', branchId: '', items: [{ varietyId: '', quantityInitial: 0, pricePerQuintal: 0 }] },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -94,6 +97,7 @@ export const InventoryDashboard: React.FC = () => {
     try {
       const formData = new FormData();
       formData.append('lotNumber', data.lotNumber);
+      formData.append('branchId', data.branchId);
       formData.append('items', JSON.stringify(data.items));
       if (receiptFile) {
         formData.append('receipt', receiptFile);
@@ -103,7 +107,7 @@ export const InventoryDashboard: React.FC = () => {
       }
 
       await createLotMutation.mutateAsync(formData);
-      lotForm.reset({ lotNumber: '', items: [{ varietyId: '', quantityInitial: 0, pricePerQuintal: 0 }] });
+      lotForm.reset({ lotNumber: '', branchId: '', items: [{ varietyId: '', quantityInitial: 0, pricePerQuintal: 0 }] });
       setReceiptFile(null);
       setIsLotModalOpen(false);
     } catch (err: any) {
@@ -135,6 +139,18 @@ export const InventoryDashboard: React.FC = () => {
     { value: '', label: 'Selecciona variedad' },
     ...varieties.map((v) => ({ value: v.id, label: v.name })),
   ];
+
+  const activeBranchOptions = React.useMemo(() => {
+    const activeBranches = branches.filter((b) => b.isActive);
+    return [
+      { value: '', label: 'Selecciona sucursal' },
+      ...activeBranches.map((b) => ({ value: b.id, label: b.name })),
+    ];
+  }, [branches]);
+
+  const branchMap = React.useMemo(() => {
+    return new Map(branches.map((b) => [b.id, b.name]));
+  }, [branches]);
 
   // Recolectar todos los ítems de lotes disponibles para movimientos
   const lotItemOptions = [
@@ -218,6 +234,7 @@ export const InventoryDashboard: React.FC = () => {
             <Thead>
               <Tr>
                 <Th>Nº Lote</Th>
+                <Th>Sucursal</Th>
                 <Th>Variedad</Th>
                 <Th>Stock Inicial</Th>
                 <Th>Stock Actual</Th>
@@ -229,7 +246,7 @@ export const InventoryDashboard: React.FC = () => {
             <Tbody>
               {inventoryData?.lots.length === 0 ? (
                 <Tr>
-                  <Td colSpan={7} className="text-center text-slate-500 py-8">
+                  <Td colSpan={8} className="text-center text-slate-500 py-8">
                     No se han registrado lotes en el sistema.
                   </Td>
                 </Tr>
@@ -240,6 +257,11 @@ export const InventoryDashboard: React.FC = () => {
                       {idx === 0 ? (
                         <Td rowSpan={lot.items.length} className="font-bold text-slate-200">
                           {lot.lotNumber}
+                        </Td>
+                      ) : null}
+                      {idx === 0 ? (
+                        <Td rowSpan={lot.items.length} className="text-slate-300">
+                          {branchMap.get(lot.branchId) || 'Sin sucursal'}
                         </Td>
                       ) : null}
                       <Td>{item.varietyName}</Td>
@@ -321,6 +343,13 @@ export const InventoryDashboard: React.FC = () => {
             placeholder="Ej. LOTE-2026-001"
             error={lotForm.formState.errors.lotNumber?.message}
             {...lotForm.register('lotNumber')}
+          />
+
+          <Select
+            label="Sucursal Destino"
+            options={activeBranchOptions}
+            error={lotForm.formState.errors.branchId?.message}
+            {...lotForm.register('branchId')}
           />
 
           <div className="flex flex-col gap-3">

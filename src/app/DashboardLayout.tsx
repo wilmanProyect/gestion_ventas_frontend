@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../modules/auth/presentation/useAuthStore';
+import { checkPermission } from '../shared/ui/HasPermission';
 
 export const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
@@ -56,10 +57,26 @@ export const DashboardLayout: React.FC = () => {
         </svg>
       ),
     },
+    {
+      name: 'Sucursales',
+      path: '/sucursales',
+      permission: 'branches:read',
+      icon: (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+    },
   ];
 
   const isAdmin = user?.roles.includes('Admin') || false;
-  const visibleNavigation = navigation.filter((item) => !item.isAdminOnly || isAdmin);
+  const visibleNavigation = navigation.filter((item) => {
+    if (item.isAdminOnly && !isAdmin) return false;
+    if (item.permission && user) {
+      return checkPermission(user.roles, item.permission, user.permissions);
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen flex bg-slate-950 text-slate-100 font-sans">

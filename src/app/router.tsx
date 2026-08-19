@@ -8,6 +8,7 @@ import { SalesDashboard } from '../modules/sales/presentation/SalesDashboard';
 import { ReturnsPage } from '../modules/sales/presentation/ReturnsPage';
 import { UsersPage } from '../modules/users/presentation/UsersPage';
 import { RolesPage } from '../modules/roles-permissions/presentation/RolesPage';
+import { BranchesPage } from '../modules/branches/presentation/BranchesPage';
 
 interface RouteProps {
   children: React.ReactElement;
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
       {
         path: 'roles',
         element: <RolesPage />,
+      },
+      {
+        path: 'sucursales',
+        element: <BranchesPage />,
       },
     ],
   },

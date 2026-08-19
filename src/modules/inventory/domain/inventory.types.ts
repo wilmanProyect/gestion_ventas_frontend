@@ -17,6 +17,7 @@ export interface Lot {
   id: string;
   lotNumber: string;
   receiptUrl: string | null;
+  branchId: string;
   createdAt: string;
   items: LotItem[];
 }

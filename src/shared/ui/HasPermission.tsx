@@ -11,7 +11,11 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'create:reservation',
     'pickup:reservation',
     'process:return',
-    'view:sales'
+    'view:sales',
+    'branches:read',
+    'branches:create',
+    'branches:update',
+    'branches:delete'
   ],
   Vendedor: [
     'view:inventory',
